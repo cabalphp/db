@@ -1,7 +1,7 @@
 <?php
-namespace Cabal\DB\Coroutine;
+namespace Cabal\DB\Connection;
 
-class MySQL extends \Swoole\Coroutine\MySQL
+class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterface
 {
     protected $id;
     protected $name;
@@ -26,4 +26,15 @@ class MySQL extends \Swoole\Coroutine\MySQL
     {
         return $this->name;
     }
+
+    public function lastInsertId()
+    {
+        return $this->insert_id;
+    }
+
+    public function affectedRows()
+    {
+        return $this->affected_rows;
+    }
+
 }

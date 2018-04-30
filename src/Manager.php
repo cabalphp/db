@@ -35,20 +35,39 @@ class Manager
         }
         $connection = $this->pools[$config['id']]->isEmpty() ? null : $this->pools[$config['id']]->shift();
         if (!$connection) {
-            $connection = new Coroutine\MySQL();
-            $connection->connect([
-                'host' => $config['host'],
-                'port' => $config['port'],
-                'user' => $config['user'],
-                'password' => $config['password'],
-                'database' => $config['database'],
-            ]);
+            if (\Swoole\Coroutine::getuid() >= 0) {
+                $connection = new Connection\CoroutineMySQL();
+                $connection->connect([
+                    'host' => $config['host'],
+                    'port' => $config['port'],
+                    'user' => $config['user'],
+                    'password' => $config['password'],
+                    'database' => $config['database'],
+                ]);
 
-            if ($connection->connected) {
-                $connection->setId($config['id']);
+                if ($connection->connected) {
+                    $connection->setId($config['id']);
+                } else {
+                    throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
+                }
             } else {
-                throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
+
+                $connection = new Connection\MySQL();
+                $connection->connect([
+                    'host' => $config['host'],
+                    'port' => $config['port'],
+                    'user' => $config['user'],
+                    'password' => $config['password'],
+                    'database' => $config['database'],
+                ]);
+
+                if ($connection->connected) {
+                    $connection->setId($config['id']);
+                } else {
+                    throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
+                }
             }
+
         }
 
         return new Connection($this, $connection, $this->getStructure($name));
@@ -82,7 +101,7 @@ class Manager
         return $config;
     }
 
-    public function push(Coroutine\MySQL $connection)
+    public function push(ConnectionInterface $connection)
     {
         $this->pools[$connection->getId()]->push($connection);
     }

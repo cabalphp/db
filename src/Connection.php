@@ -6,7 +6,12 @@ class Connection
 {
     protected $manager;
 
-    protected $swooleConnection;
+    /**
+     * Undocumented variable
+     *
+     * @var \Cabal\DB\ConnectionInterface
+     */
+    protected $realConnection;
 
     protected $lastActivedAt = 0;
 
@@ -19,10 +24,10 @@ class Connection
 
     protected $queryLogs = [];
 
-    public function __construct(Manager $manager, $swooleConnection, $structure = null)
+    public function __construct(Manager $manager, ConnectionInterface $realConnection, $structure = null)
     {
         $this->manager = $manager;
-        $this->swooleConnection = $swooleConnection;
+        $this->realConnection = $realConnection;
         $this->structure = $structure;
     }
 
@@ -35,12 +40,12 @@ class Connection
     /**
      * Undocumented function
      *
-     * @return \Cabal\DB\Coroutine\MySQL
+     * @return \Cabal\DB\Connection\ConnectionInterface
      */
-    public function getSwooleConnection()
+    public function getRealConnection()
     {
         $this->lastActivedAt = time();
-        return $this->swooleConnection;
+        return $this->realConnection;
     }
 
     /**
@@ -80,9 +85,9 @@ class Connection
 
     public function prepare($sql)
     {
-        $query = $this->getSwooleConnection()->prepare($sql);
+        $query = $this->getRealConnection()->prepare($sql);
         if ($query === false) {
-            throw new Exception($this->swooleConnection->error . "SQL: {$sql}", $this->swooleConnection->errno);
+            throw new Exception($this->realConnection->error . "SQL: {$sql}", $this->realConnection->errno);
         }
         return $query;
     }
@@ -97,27 +102,27 @@ class Connection
             'sql' => $sql,
             'params' => $params,
             'millisecond' => (microtime(true) - $startAt) * 1000,
-            'errno' => $this->swooleConnection->errno,
-            'error' => $this->swooleConnection->error,
+            'errno' => $this->realConnection->errno,
+            'error' => $this->realConnection->error,
         ];
 
-        if ($result === false && $this->swooleConnection->errno) {
-            throw new Exception($this->swooleConnection->error, $this->swooleConnection->errno);
+        if ($result === false && $this->realConnection->errno) {
+            throw new Exception($this->realConnection->error, $this->realConnection->errno);
         }
         return $result;
     }
 
     public function begin()
     {
-        $this->getSwooleConnection()->query("BEGIN;");
+        $this->getRealConnection()->query("BEGIN;");
     }
     public function rollback()
     {
-        $this->getSwooleConnection()->query("ROLLBACK;");
+        $this->getRealConnection()->query("ROLLBACK;");
     }
     public function commit()
     {
-        $this->getSwooleConnection()->query("COMMIT;");
+        $this->getRealConnection()->query("COMMIT;");
     }
     public function transaction(\Closure $callable)
     {
@@ -135,12 +140,12 @@ class Connection
 
     public function affectedRows()
     {
-        return $this->swooleConnection->affected_rows;
+        return $this->realConnection->affectedRows();
     }
 
     public function lastInsertId()
     {
-        return $this->swooleConnection->insert_id;
+        return $this->realConnection->lastInsertId();
     }
 
     public function getQueryLogs()
@@ -150,6 +155,6 @@ class Connection
 
     public function __destruct()
     {
-        $this->manager->push($this->swooleConnection);
+        $this->manager->push($this->realConnection);
     }
 }
