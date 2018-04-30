@@ -1,9 +1,9 @@
 <?php
-namespace Cabal\DB\Boot;
+namespace Cabal\DB;
 
 use Cabal\DB\Manager;
 
-trait HasDB
+trait ServerHasDB
 {
     protected $cabalDB;
 
