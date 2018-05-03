@@ -1,6 +1,9 @@
 <?php
 namespace Cabal\DB;
 
+use Cabal\DB\Connection\ConnectionInterface;
+
+
 class Manager
 {
     protected $pools = [];
@@ -157,7 +160,7 @@ class Manager
         return $this->getConnection()->prepare($sql);
     }
 
-    public function query($sql, $params)
+    public function query($sql, $params = [])
     {
         return $this->getConnection()->query($sql, $params);
     }

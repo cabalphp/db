@@ -3,11 +3,11 @@ namespace Cabal\DB\Connection;
 
 interface ConnectionInterface
 {
-    public function connect($server);
+    // public function connect($server);
     public function lastInsertId();
     public function affectedRows();
     public function query($sql);
-    public function prepare($sql);
+    // public function prepare($query);
 
     public function setId($id);
     public function setName($name);

@@ -1,6 +1,9 @@
 <?php
 namespace Cabal\DB;
 
+use Cabal\DB\Connection\ConnectionInterface;
+
+
 
 class Connection
 {
