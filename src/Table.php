@@ -30,6 +30,8 @@ class Table
     protected $limit = null;
     protected $offset = null;
 
+    protected $model = null;
+
     public function __construct($dbManager, $connection, $tableName, $structure)
     {
         $this->dbManager = $dbManager;
@@ -355,7 +357,7 @@ class Table
         $connection = $this->getConnection();
         $dbRows = $connection->query($sql, $params);
         $this->storeLogs($connection->getQueryLogs());
-        return new Rows($dbRows ? : [], $this);
+        return new Rows($dbRows ? : [], $this, null, $this->model);
     }
 
     /**
@@ -378,6 +380,12 @@ class Table
                 $this->logStore[] = $log;
             }
         }
+        return $this;
+    }
+
+    public function asModel($model)
+    {
+        $this->model = $model;
         return $this;
     }
 

@@ -1,6 +1,8 @@
 <?php
 namespace Cabal\DB;
 
+use Swoole\Coroutine;
+
 class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 {
     /**
@@ -20,7 +22,9 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     protected $cursor = 0;
     protected $relations = [];
 
-    public function __construct(array $dbRows = [], Table $table = null, $realRows = null)
+    protected $model;
+
+    public function __construct(array $dbRows = [], Table $table = null, $realRows = null, $model = null)
     {
         foreach ($dbRows as $dbRow) {
             if ($dbRow instanceof Row) {
@@ -39,6 +43,17 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
         $this->realRows = $realRows;
         $this->keys = array_keys($this->rows);
         $this->table = $table;
+        $this->model = $model;
+    }
+
+    public function setModel($model)
+    {
+        $this->model = $model;
+    }
+
+    public function getModel()
+    {
+        return $this->model;
     }
 
     /**
@@ -75,7 +90,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      */
     public function find($id)
     {
-        return isset($this->rows[$id]) ? new Row($this->rows[$id], $this->realRows ? : $this) : null;
+        return isset($this->rows[$id]) ? $this->instanceRow($this->rows[$id], $this->realRows ? : $this) : null;
     }
 
     public function count()
@@ -84,7 +99,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     }
     public function current()
     {
-        return new Row($this->rows[current($this->keys)], $this->realRows ? : $this);
+        return $this->instanceRow($this->rows[current($this->keys)], $this->realRows ? : $this);
     }
     public function key()
     {
@@ -111,10 +126,10 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      * @param [type] $foreignKey
      * @return \Cabal\DB\Rows
      */
-    public function loadHasRelations($name, $foreignKey)
+    public function loadHasRelations($name, $foreignKey, $callback = null, $storeKey = null)
     {
-        $relations = [];
-        if (!isset($this->relations[$name])) {
+        $storeKey = $storeKey ? : $name;
+        if (!isset($this->relations[$storeKey])) {
             $keys = array_unique($this->pluck($this->table->getPrimaryKey()));
 
             if (count($keys) > 0) {
@@ -124,19 +139,29 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
                 } else {
                     $relationRows->whereIn($foreignKey, $keys);
                 }
+                if ($callback) {
+                    Coroutine::call_user_func_array($callback, [$relationRows]);
+                }
                 $relationRows = $relationRows->rows();
             } else {
                 $relationRows = new Rows([], $this->table->similarTable($name));
             }
-            $this->relations[$name] = $relationRows;
+            $this->relations[$storeKey] = $relationRows;
         }
-        return $this->relations[$name];
+        return $this->relations[$storeKey];
     }
 
-    public function loadBelongRelations($name, $foreignKey)
+    /**
+     * Undocumented function
+     *
+     * @param [type] $name
+     * @param [type] $foreignKey
+     * @return \Cabal\DB\Rows
+     */
+    public function loadBelongRelations($name, $foreignKey, $callback = null, $storeKey = null)
     {
-        $relations = [];
-        if (!isset($this->relations[$name])) {
+        $storeKey = $storeKey ? : $name;
+        if (!isset($this->relations[$storeKey])) {
             $keys = array_unique($this->pluck($foreignKey));
             if (count($keys) > 0) {
                 $relationRows = $this->table->similarTable($name);
@@ -147,16 +172,26 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
                 } else {
                     $relationRows->whereIn($primaryKey, $keys);
                 }
+                if ($callback) {
+                    Coroutine::call_user_func_array($callback, [$relationRows]);
+                }
                 $relationRows = $relationRows->rows()->toDictionary();
             } else {
                 $relationRows = new Rows([], $this->table->similarTable($name));
             }
 
-            $this->relations[$name] = $relationRows;
+            $this->relations[$storeKey] = $relationRows;
         }
-        return $this->relations[$name];
+        return $this->relations[$storeKey];
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param [type] $field
+     * @param [type] $id
+     * @return \Cabal\DB\Rows
+     */
     public function group($field, $id)
     {
         if (!isset($this->grouped[$field])) {
@@ -168,9 +203,14 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
             }
         }
         $origins = isset($this->grouped[$field][$id]) ? $this->grouped[$field][$id] : [];
-        return new Rows($origins, $this->getTable(), $this);
+        return new Rows($origins, $this->getTable(), $this, $this->model);
     }
 
+    /**
+     * Undocumented function
+     *
+     * @return \Cabal\DB\ROW
+     */
     public function fetch()
     {
         if ($this->valid()) {
@@ -179,10 +219,22 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
             return $result;
         }
     }
+
+    /**
+     * Undocumented function
+     *
+     * @return \Cabal\DB\ROW
+     */
     public function first()
     {
         $keys = array_keys($this->rows);
-        return current($keys) === false ? null : new Row($this->rows[current($keys)], $this->realRows ? : $this);
+        return current($keys) === false ? null : $this->instanceRow($this->rows[current($keys)], $this->realRows ? : $this);
+    }
+
+    protected function instanceRow($origin)
+    {
+        $model = $this->model ? : Row::class;
+        return new $model($origin, $this->realRows ? : $this);
     }
 
     public function pluck($field)
@@ -201,7 +253,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 
     public function offsetGet($key)
     {
-        return isset($this->rows[$key]) ? new Row($this->rows[$key], $this->realRows ? : $this) : null;
+        return isset($this->rows[$key]) ? $this->instanceRow($this->rows[$key], $this->realRows ? : $this) : null;
     }
 
     public function offsetSet($key, $value)
@@ -229,7 +281,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     {
         $array = [];
         foreach ($this->rows as $row) {
-            $row = new Row($row, $this->realRows ? : $this);
+            $row = $this->instanceRow($row, $this->realRows ? : $this);
             $array[] = $row->jsonSerialize();
         }
         return $array;

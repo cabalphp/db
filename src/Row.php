@@ -47,13 +47,20 @@ class Row implements \JsonSerializable
      * @param string $foreignKey
      * @return \Cabal\DB\Row[]|\Cabal\DB\Rows
      */
-    public function has($name, $foreignKey = null)
+    public function has($name, $foreignKeyOrCallback = null, $callback = null, $storeKey = null)
     {
+        $foreignKey = null;
+        if (func_num_args() < 4 && is_callable($foreignKeyOrCallback)) {
+            $storeKey = $callback;
+            $callback = $foreignKeyOrCallback;
+        } else {
+            $foreignKey = $foreignKeyOrCallback;
+        }
         $foreignKey = $foreignKey ? : $this->rows
             ->getTable()
             ->getStructure()
             ->foreignKey($this->getRows()->getTable()->getTableName(), $name);
-        $relations = $this->getRows()->loadHasRelations($name, $foreignKey);
+        $relations = $this->getRows()->loadHasRelations($name, $foreignKey, $callback, $storeKey);
         return $relations->group($foreignKey, $this->getId());
     }
 
@@ -64,13 +71,20 @@ class Row implements \JsonSerializable
      * @param string $foreignKey
      * @return \Cabal\DB\Row
      */
-    public function belongs($name, $foreignKey = null)
+    public function belongs($name, $foreignKeyOrCallback = null, $callback = null, $storeKey = null)
     {
+        $foreignKey = null;
+        if (func_num_args() < 4 && is_callable($foreignKeyOrCallback)) {
+            $storeKey = $callback;
+            $callback = $foreignKeyOrCallback;
+        } else {
+            $foreignKey = $foreignKeyOrCallback;
+        }
         $foreignKey = $foreignKey ? : $this->rows
             ->getTable()
             ->getStructure()
             ->foreignKey($name, $this->getRows()->getTable()->getTableName());
-        $relations = $this->getRows()->loadBelongRelations($name, $foreignKey);
+        $relations = $this->getRows()->loadBelongRelations($name, $foreignKey, $callback, $storeKey);
         return $relations->find($this->$foreignKey);
     }
 
