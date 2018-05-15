@@ -15,7 +15,7 @@ trait ServerHasDB
     public function db()
     {
         if (!$this->cabalDB) {
-            $this->cabalDB = new Manager($this->configure('db'));
+            $this->cabalDB = new Manager($this->configure('db'), $this->taskworker);
         }
         return $this->cabalDB;
     }

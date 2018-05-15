@@ -9,11 +9,13 @@ class Manager
     protected $pools = [];
     protected $structures = [];
     protected $default;
+    protected $isTaskWorker;
 
-    public function __construct($configs)
+    public function __construct($configs, $isTaskWorker)
     {
         $this->default = $configs['default'];
         $this->configs = $configs;
+        $this->isTaskWorker = $isTaskWorker;
     }
 
     /**
@@ -38,7 +40,7 @@ class Manager
         }
         $connection = $this->pools[$config['id']]->isEmpty() ? null : $this->pools[$config['id']]->shift();
         if (!$connection) {
-            if (\Swoole\Coroutine::getuid() >= 0) {
+            if (!$this->isTaskWorker) {
                 $connection = new Connection\CoroutineMySQL();
                 $connection->connect([
                     'host' => $config['host'],

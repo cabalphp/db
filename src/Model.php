@@ -59,12 +59,12 @@ class Model extends Row
      *
      * @return \Cabal\DB\Table
      */
-    protected function newTable()
+    protected function newTable($table = null)
     {
         return new Table(
             static::$dbManager,
             $this->connectionName,
-            $this->tableName,
+            $table ? : $this->tableName,
             static::$dbManager->getStructure($this->connectionName)
         );
     }
@@ -107,10 +107,10 @@ class Model extends Row
      *
      * @return \Cabal\DB\Table
      */
-    static function query()
+    static function query($table = null)
     {
         $model = new static();
-        return $model->newTable()->asModel(get_class($model));
+        return $model->newTable($table = null)->asModel(get_class($model));
     }
 
     public function has($model, $foreignKeyOrCallback = null, $callback = null, $storeKey = null)

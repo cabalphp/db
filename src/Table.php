@@ -309,9 +309,9 @@ class Table
                 $statements['SELECT'][] = ($field instanceof Raw) ? $field->toString() : $field;
             }
         } else {
-            $statements['SELECT'][] = "`{$tableName}`.*";
+            $statements['SELECT'][] = "{$tableName}.*";
         }
-        $this->from = $this->from ? : ["`{$tableName}`"];
+        $this->from = $this->from ? : ["{$tableName}"];
         foreach ($this->from as $from) {
             $statements['FROM'][] = $from;
         }
@@ -458,7 +458,7 @@ class Table
         $values = array_values($data);
 
         $sql = sprintf(
-            'INSERT into `%s` (`%s`) VALUES (%s);',
+            'INSERT into %s (`%s`) VALUES (%s);',
             $this->getTableName(),
             implode('`, `', $fields),
             implode(', ', $placeholders)
@@ -468,6 +468,7 @@ class Table
         $this->storeLogs($connection->getQueryLogs());
         return $connection->lastInsertId();
     }
+
 
     protected function updateSql($sets, $values)
     {
@@ -483,7 +484,7 @@ class Table
             'LIMIT' => $this->limit,
             'OFFSET' => $this->offset,
         ];
-        $statements['UPDATE'][] = "`{$tableName}`";
+        $statements['UPDATE'][] = $tableName;
 
         foreach ($this->where as $i => $where) {
             if (is_array($where)) {
@@ -545,7 +546,7 @@ class Table
             'LIMIT' => $this->limit,
             'OFFSET' => $this->offset,
         ];
-        $statements['DELETE FROM'][] = "`{$tableName}`";
+        $statements['DELETE FROM'][] = $tableName;
 
         foreach ($this->where as $i => $where) {
             if (is_array($where)) {
