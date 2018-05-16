@@ -11,6 +11,8 @@ class MySQL implements ConnectionInterface
     public $connect_error;
     public $connect_errno;
     public $connected = false;
+    protected $queryTimes = 0;
+
 
     /**
      * Undocumented variable
@@ -103,6 +105,16 @@ class MySQL implements ConnectionInterface
     public function getName()
     {
         return $this->name;
+    }
+
+    public function incrQueryTimes()
+    {
+        return ++$this->queryTimes;
+    }
+
+    public function getQueryTimes()
+    {
+        return $this->queryTimes;
     }
 
 }

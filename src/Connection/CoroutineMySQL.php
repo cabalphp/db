@@ -5,6 +5,7 @@ class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterf
 {
     protected $id;
     protected $name;
+    protected $queryTimes = 0;
 
     public function setId($id)
     {
@@ -36,5 +37,17 @@ class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterf
     {
         return $this->affected_rows;
     }
+
+
+    public function incrQueryTimes()
+    {
+        return ++$this->queryTimes;
+    }
+
+    public function getQueryTimes()
+    {
+        return $this->queryTimes;
+    }
+
 
 }

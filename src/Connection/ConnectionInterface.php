@@ -13,4 +13,6 @@ interface ConnectionInterface
     public function setName($name);
     public function getId();
     public function getName();
+    public function incrQueryTimes();
+    public function getQueryTimes();
 }

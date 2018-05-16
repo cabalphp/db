@@ -12,7 +12,7 @@ class Connection
     /**
      * Undocumented variable
      *
-     * @var \Cabal\DB\ConnectionInterface
+     * @var \Cabal\DB\Connection\ConnectionInterface
      */
     protected $realConnection;
 
@@ -158,6 +158,8 @@ class Connection
 
     public function __destruct()
     {
-        $this->manager->push($this->realConnection);
+        if ($this->realConnection->getQueryTimes() <= 2000) {
+            $this->manager->push($this->realConnection);
+        }
     }
 }

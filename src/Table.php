@@ -467,6 +467,23 @@ class Table
         $this->storeLogs($connection->getQueryLogs());
         return $connection->lastInsertId();
     }
+    public function replace($data)
+    {
+        $fields = array_keys($data);
+        $placeholders = array_fill(0, count($fields), '?');
+        $values = array_values($data);
+
+        $sql = sprintf(
+            'REPLACE into %s (`%s`) VALUES (%s);',
+            $this->getTableName(),
+            implode('`, `', $fields),
+            implode(', ', $placeholders)
+        );
+        $connection = $this->getConnection(true);
+        $connection->query($sql, $values);
+        $this->storeLogs($connection->getQueryLogs());
+        return $connection->lastInsertId();
+    }
 
 
     protected function updateSql($sets, $values)
