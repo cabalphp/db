@@ -97,6 +97,8 @@ class Connection
 
     public function query($sql, $params = [])
     {
+        $this->realConnection->incrQueryTimes();
+
         $startAt = microtime(true);
         $query = $this->prepare($sql);
         $result = $query->execute($params);
@@ -158,7 +160,8 @@ class Connection
 
     public function __destruct()
     {
-        if ($this->realConnection->getQueryTimes() <= 2000) {
+        $queryTimes = $this->realConnection->getQueryTimes();
+        if ($queryTimes <= 500) {
             $this->manager->push($this->realConnection);
         }
     }

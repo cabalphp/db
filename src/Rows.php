@@ -279,10 +279,15 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 
     public function jsonSerialize()
     {
+        return $this->toArray();
+    }
+
+    public function toArray()
+    {
         $array = [];
-        foreach ($this->rows as $row) {
+        foreach ($this->rows as $k => $row) {
             $row = $this->instanceRow($row, $this->realRows ? : $this);
-            $array[] = $row->jsonSerialize();
+            $array[$k] = $row->jsonSerialize();
         }
         return $array;
     }
