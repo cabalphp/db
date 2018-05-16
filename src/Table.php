@@ -375,7 +375,6 @@ class Table
     public function storeLogs($logs)
     {
         if ($this->logStore !== null) {
-            print_r($logs);
             foreach ($logs as $log) {
                 $this->logStore[] = $log;
             }
@@ -522,8 +521,12 @@ class Table
         $sets = [];
         $values = [];
         foreach ($data as $field => $value) {
-            $sets[] = "`{$field}` = ?";
-            $values[] = $value;
+            if ($value instanceof Raw) {
+                $sets[] = "{$field} = " . $value->toString();
+            } else {
+                $sets[] = "{$field} = ?";
+                $values[] = $value;
+            }
         }
         list($sql, $params) = $this->updateSql($sets, $values);
         $connection = $this->getConnection(true);
