@@ -37,6 +37,7 @@ class Table
         $this->dbManager = $dbManager;
         if ($connection instanceof Connection) {
             $this->connection = $connection;
+            $this->connectionName = $connection->getRealConnection()->getName();
         } else {
             $this->connectionName = $connection;
         }
@@ -330,6 +331,14 @@ class Table
             $statements['JOIN'] .= "{$way} JOIN {$tableName} ON {$on}";
             $params = array_merge($params, $subParams);
         }
+        foreach ($this->orderBy as $orderBy) {
+            list($field, $sort) = $orderBy;
+            if ($field instanceof Raw) {
+                $field = $field->toString();
+            }
+            $statements['ORDER BY'][] = "{$field} {$sort}";
+            $params = array_merge($params, $subParams);
+        }
         $sql = [];
         foreach ($statements as $key => $values) {
             if ($values) {
@@ -601,5 +610,17 @@ class Table
         $connection->query($sql, $params);
         $this->storeLogs($connection->getQueryLogs());
         return $connection->affectedRows();
+    }
+
+
+
+    public function __sleep()
+    {
+        return [
+            'dbManager',
+            'connectionName',
+            'tableName',
+            'structure',
+        ];
     }
 }

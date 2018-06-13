@@ -4,7 +4,6 @@ namespace Cabal\DB;
 use Cabal\DB\Connection\ConnectionInterface;
 
 
-
 class Connection
 {
     protected $manager;
@@ -90,7 +89,7 @@ class Connection
     {
         $query = $this->getRealConnection()->prepare($sql);
         if ($query === false) {
-            throw new Exception($this->realConnection->error . "SQL: {$sql}", $this->realConnection->errno);
+            throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
         }
         return $query;
     }
@@ -112,7 +111,7 @@ class Connection
         ];
 
         if ($result === false && $this->realConnection->errno) {
-            throw new Exception($this->realConnection->error, $this->realConnection->errno);
+            throw new Exception($this->realConnection->error . "[SQL] {$sql}; [PATAMS] " . json_encode($params), intval($this->realConnection->errno));
         }
         return $result;
     }

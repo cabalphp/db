@@ -7,6 +7,8 @@ use Cabal\DB\Connection\ConnectionInterface;
 class Manager
 {
     protected $pools = [];
+
+    protected $configs;
     protected $structures = [];
     protected $default;
     protected $isTaskWorker;
@@ -52,6 +54,7 @@ class Manager
 
                 if ($connection->connected) {
                     $connection->setId($config['id']);
+                    $connection->setName($name);
                 } else {
                     throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
                 }
@@ -68,6 +71,7 @@ class Manager
 
                 if ($connection->connected) {
                     $connection->setId($config['id']);
+                    $connection->setName($name);
                 } else {
                     throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
                 }
@@ -165,6 +169,16 @@ class Manager
     public function query($sql, $params = [])
     {
         return $this->getConnection()->query($sql, $params);
+    }
+
+    public function __sleep()
+    {
+        return [
+            'configs',
+            'structures',
+            'default',
+            'isTaskWorker',
+        ];
     }
 
 }
