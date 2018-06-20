@@ -22,6 +22,7 @@ class Table
     protected $logStore;
 
     protected $select = [];
+    protected $distinct = false;
     protected $from = [];
     protected $joins = [];
     protected $where = [];
@@ -117,6 +118,18 @@ class Table
     public function setConnectionName($connectionName)
     {
         $this->connectionName = $connectionName;
+        return $this;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param boolean $distinct
+     * @return \Cabal\DB\Table
+     */
+    public function distinct($distinct = true)
+    {
+        $this->distinct = $distinct;
         return $this;
     }
 
@@ -270,7 +283,7 @@ class Table
      * @param integer $offset
      * @return \Cabal\DB\Table
      */
-    public function limit($limit, $offset = 0)
+    public function limit($limit, $offset = null)
     {
         $this->limit = $limit;
         if ($offset !== null) {
@@ -344,6 +357,9 @@ class Table
             if ($values) {
                 if ($key != 'JOIN') {
                     $sql[] = $key;
+                    if ($key == 'SELECT' && $this->distinct) {
+                        $sql[] = 'DISTINCT';
+                    }
                 }
                 if (is_array($values)) {
                     $sql[] = implode(',', $values);
@@ -410,6 +426,28 @@ class Table
     /**
      * Undocumented function
      *
+     * @param [type] $currentPage
+     * @param integer $perPage
+     * @param array $columns
+     * @return \Cabal\DB\Paginate
+     */
+    public function paginate($currentPage, $perPage = 20, $columns = ['*'])
+    {
+        $rowsQuery = clone $this;
+        $count = $rowsQuery->count();
+        $currentPage = $currentPage < 1 ? 1 : $currentPage;
+        if ($perPage < 1) {
+            $perPage = $count;
+        }
+        $offset = ($currentPage - 1) * $perPage;
+        $limit = $perPage;
+        $rows = $this->offset($offset)->limit($limit)->rows();
+        return new Paginate($rows, $perPage, $currentPage, $count);
+    }
+
+    /**
+     * Undocumented function
+     *
      * @return \Cabal\DB\Row
      */
     public function first()
@@ -424,7 +462,8 @@ class Table
      */
     public function count($field = '*')
     {
-        return intval($this->select(new Raw("COUNT({$field}) as `aggregation`"))->limit(1)->fetch()->aggregation);
+        $field = $this->distinct ? "DISTINCT {$field}" : $field;
+        return intval($this->select(new Raw("COUNT({$field}) as `aggregation`"))->first(1)->aggregation);
     }
 
     /**
