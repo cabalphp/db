@@ -9,6 +9,30 @@ require_once __DIR__ . '/../vendor/autoload.php';
 class User extends Model
 {
     protected $tableName = 'user';
+    protected $timestamps = true;
+
+    protected $appends = ['anno_name'];
+
+    public function __getAnnoName($value = null)
+    {
+        return 'AnnoName';
+    }
+
+    public function __getJson($value = null)
+    {
+        return json_decode($value, true);
+    }
+    public function __setJson($value)
+    {
+        $this->dbData['json'] = json_encode($value);
+    }
+
+    public function __getPublishArticles()
+    {
+        return $this->has(Article::class, function (Table $table) {
+            $table->where('status = ?', 1);
+        }, 'publishedArticle');
+    }
 }
 class Article extends Model
 {
@@ -40,7 +64,7 @@ class ModelTest extends TestCase
                     'password' => '123456',
                     'database' => 'cabal_test',
                 ],
-            ]);
+            ], 1);
             self::$db->query("DROP TABLE IF EXISTS `user`;");
             self::$db->query("DROP TABLE IF EXISTS `tag`;");
             self::$db->query("DROP TABLE IF EXISTS `article_tag`;");
@@ -48,7 +72,9 @@ class ModelTest extends TestCase
 
             self::$db->query("CREATE TABLE `user` (
   `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
             self::$db->query("CREATE TABLE `tag` (
   `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -73,6 +99,24 @@ class ModelTest extends TestCase
         Model::setDBManager(self::$db);
     }
 
+    public function testMagicMethod()
+    {
+        $user = new User();
+        $tmp = [1, 3, 2];
+        $user->json = $tmp;
+        $this->assertEquals(is_array($user->json), true);
+        $this->assertEquals(json_encode($user->json), json_encode($tmp));
+        $array = $user->toArray();
+        $this->assertEquals(json_encode($array['json']), json_encode($tmp));
+
+
+        $origin = $user->getOriginData();
+        $this->assertEquals($origin->json, json_encode($tmp));
+
+        $this->assertArrayHasKey('anno_name', $array);
+        $this->assertEquals($array['anno_name'], 'AnnoName');
+    }
+
     public function testEmpty()
     {
         $db = self::$db;
@@ -88,6 +132,14 @@ class ModelTest extends TestCase
         $this->assertNotEmpty($user->id);
         $this->assertEquals($user->id, 1);
 
+        sleep(1);
+        $user->name = uniqid();
+        $user->save();
+
+        $this->assertEquals($user->getDirty(), []);
+
+        $this->assertEquals($user->updated_at->timestamp - $user->created_at->timestamp, 1);
+
         $exists = User::query()->first();
         $this->assertEquals($exists->id, $user->id);
         $this->assertEquals($exists->name, $user->name);
@@ -100,17 +152,27 @@ class ModelTest extends TestCase
 
     public function testRelation()
     {
-        $user = User::query()->first();
+        $logs = [];
+        $user = User::query()->logQueryTo($logs)->first();
         $articles = $user->has(Article::class, function (Table $table) {
             $table->where('status = ?', 1);
-        }, 'published-article');
+        }, 'publishedArticle');
         $this->assertInstanceOf(Article::class, $articles->first());
         $this->assertEquals($articles->first()->id, 1);
 
+        $this->assertInstanceOf(Article::class, $user->publishArticles->first());
+        $this->assertEquals($user->publishArticles->first()->id, 1);
+
         $articles = $user->has(Article::class, function (Table $table) {
             $table->where('status = ?', -1);
-        }, 'unpublished-article');
+        }, 'unpublishedArticle');
         $this->assertEmpty($articles);
+
+        // 两次查询已发布文章，只有一次查询 + 未发布+User = 3 个SQL
+        $this->assertEquals(count($logs), 3);
+
+        $array = $user->toArray();
+        $this->assertArrayHasKey('publishedArticle', $array);
     }
 
     /**

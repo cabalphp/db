@@ -15,7 +15,8 @@
     ],
     "require": {
         "php": "^7.0.0",
-        "ext-swoole": "^2.0.0"
+        "ext-swoole": "^2.0.0",
+        "nesbot/carbon": "^1.32"
     },
     "autoload": {
         "psr-4": {

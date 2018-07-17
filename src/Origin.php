@@ -58,8 +58,8 @@ class Origin implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 
     public function offsetSet($key, $value)
     {
-        if (isset($this->array[$key]) && $value !== $this->array[$key]) {
-            $this->origin[$key] = $this->array[$key];
+        if (!isset($this->origin[$key])) {
+            $this->origin[$key] = $this->array[$key] ?? null;
         }
         $this->array[$key] = $value;
     }
@@ -86,9 +86,25 @@ class Origin implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
         return array_intersect_key($this->array, $this->origin);
     }
 
-    public function getOrigin()
+    public function isDirty($key)
     {
+        return array_key_exists($key, $this->origin);
+    }
+
+    public function getOrigin($key = null)
+    {
+        if ($key) {
+            return $this->origin[$key] ?? ($this->array[$key] ?? null);
+        }
         return $this->origin;
+    }
+
+    public function flushOrigin($key = null)
+    {
+        if ($key) {
+            unset($this->origin[$key]);
+        }
+        return $this->origin = [];
     }
 
     public function quietSet($key, $val)

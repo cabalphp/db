@@ -188,6 +188,23 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     /**
      * Undocumented function
      *
+     * @param [type] $storeKey
+     * @return \Cabal\DB\Rows
+     */
+    public function getExistsRelations($storeKey)
+    {
+        if (!isset($this->relations[$storeKey])) {
+            throw new \InvalidArgumentException(sprintf(
+                'Invalid relation store key "%s"; must be loaded',
+                $storeKey
+            ));
+        }
+        return $this->relations[$storeKey];
+    }
+
+    /**
+     * Undocumented function
+     *
      * @param [type] $field
      * @param [type] $id
      * @return \Cabal\DB\Rows

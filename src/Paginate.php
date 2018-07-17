@@ -7,8 +7,9 @@ use ArrayAccess;
 use ArrayIterator;
 use CachingIterator;
 use IteratorAggregate;
+use JsonSerializable;
 
-class Paginate implements ArrayAccess, Countable, IteratorAggregate
+class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
     /**
      * Undocumented variable
@@ -130,11 +131,10 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate
         return $this->currentPage;
     }
 
-    public function toJson()
+    public function jsonSerialize()
     {
-        return json_encode($this->toArray());
+        return $this->toArray();
     }
-
     public function __toString()
     {
         return $this->toJson();
