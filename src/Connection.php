@@ -15,7 +15,7 @@ class Connection
      */
     protected $realConnection;
 
-    protected $lastActivedAt = 0;
+    protected $discardConnection = false;
 
     /**
      * Undocumented variable
@@ -46,7 +46,6 @@ class Connection
      */
     public function getRealConnection()
     {
-        $this->lastActivedAt = time();
         return $this->realConnection;
     }
 
@@ -89,6 +88,7 @@ class Connection
     {
         $query = $this->getRealConnection()->prepare($sql);
         if ($query === false) {
+            $this->discardConnection = true;
             throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
         }
         return $query;
@@ -111,6 +111,7 @@ class Connection
         ];
 
         if ($result === false && $this->realConnection->errno) {
+            $this->discardConnection = true;
             throw new Exception($this->realConnection->error . "[SQL] {$sql}; [PATAMS] " . json_encode($params), intval($this->realConnection->errno));
         }
         return $result;
@@ -161,7 +162,11 @@ class Connection
     {
         $queryTimes = $this->realConnection->getQueryTimes();
         if ($queryTimes <= 500) {
-            $this->manager->push($this->realConnection);
+            if ($this->discardConnection) {
+                echo "Discard connection " . $this->realConnection->getId() . "\r\n";
+            } else {
+                $this->manager->push($this->realConnection);
+            }
         }
     }
 }
