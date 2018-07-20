@@ -186,6 +186,9 @@ class Model extends Row
         $array = parent::toArray();
         foreach ($this->appends as $field) {
             $array[$field] = $this->__get($field);
+            if ($array[$field] instanceof \DateTime) {
+                $array[$field] = $array[$field]->format($this->getDateFormat());
+            }
         }
         return $array;
     }
@@ -281,12 +284,12 @@ class Model extends Row
     {
         $format = $this->getDateFormat();
 
-        if ($value instanceof DateTime) {
+        if ($value instanceof \DateTime) {
         } elseif (is_numeric($value)) {
             $value = Carbon::createFromTimestamp($value);
         } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value)) {
             $value = Carbon::createFromFormat('Y-m-d', $value)->startOfDay();
-        } elseif (!$value instanceof DateTime) {
+        } elseif (!$value instanceof \DateTime) {
             $value = Carbon::createFromFormat($format, $value);
         }
 
@@ -298,7 +301,7 @@ class Model extends Row
             return Carbon::createFromTimestamp($value);
         } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value)) {
             return Carbon::createFromFormat('Y-m-d', $value);
-        } elseif (!$value instanceof DateTime) {
+        } elseif (!$value instanceof \DateTime) {
             $format = $this->getDateFormat();
             return Carbon::createFromFormat($format, $value);
         }

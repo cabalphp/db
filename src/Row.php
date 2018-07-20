@@ -102,6 +102,10 @@ class Row implements \JsonSerializable
         $array = [];
         foreach ($data as $field => $val) {
             $array[$field] = $this->__get($field);
+            if ($array[$field] instanceof \DateTime) {
+                $format = method_exists($this, 'getDateFormat') ? $this->getDateFormat() : 'Y-m-d H:i:s';
+                $array[$field] = $array[$field]->format($format);
+            }
         }
         foreach ($this->loadedRelations as $loadedRelation) {
             list($storeKey, $type, $foreignKey) = $loadedRelation;
