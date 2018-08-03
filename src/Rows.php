@@ -1,8 +1,6 @@
 <?php
 namespace Cabal\DB;
 
-use Swoole\Coroutine;
-
 class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 {
     /**
@@ -140,7 +138,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
                     $relationRows->whereIn($foreignKey, $keys);
                 }
                 if ($callback) {
-                    Coroutine::call_user_func_array($callback, [$relationRows]);
+                    Coroutine::callUserFuncArray($callback, [$relationRows]);
                 }
                 $relationRows = $relationRows->rows();
             } else {
@@ -173,7 +171,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
                     $relationRows->whereIn($primaryKey, $keys);
                 }
                 if ($callback) {
-                    Coroutine::call_user_func_array($callback, [$relationRows]);
+                    Coroutine::callUserFuncArray($callback, [$relationRows]);
                 }
                 $relationRows = $relationRows->rows()->toDictionary();
             } else {

@@ -1,7 +1,6 @@
 <?php
 namespace Cabal\DB;
 
-use Swoole\Coroutine;
 use Carbon\Carbon;
 
 // class Row implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
@@ -154,7 +153,7 @@ class Model extends Row
         return parent::has($obj->tableName, $foreignKey, function (Table $table) use ($model, $callback) {
             $table->asModel($model);
             if ($callback) {
-                Coroutine::call_user_func_array($callback, [$table]);
+                Coroutine::callUserFuncArray($callback, [$table]);
             }
         }, $storeKey);
     }
@@ -175,7 +174,7 @@ class Model extends Row
         return parent::belongs($obj->tableName, $foreignKey, function (Table $table) use ($model, $callback) {
             $table->asModel($model);
             if ($callback) {
-                Coroutine::call_user_func_array($callback, [$table]);
+                Coroutine::callUserFuncArray($callback, [$table]);
             }
         }, $storeKey);
     }
