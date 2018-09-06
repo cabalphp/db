@@ -61,6 +61,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      */
     public function getTable()
     {
+        return $this->table->similarTable($this->table->getTableName());
         return $this->table;
     }
 

@@ -42,7 +42,10 @@ class Model extends Row
     // public function __construct(Origin $dbData, Rows $rows = null)
     public function __construct(Origin $dbData = null, Rows $rows = null)
     {
-        $this->dbData = $dbData ? $dbData : new Origin([]);
+        if ($dbData) {
+            $this->dbData = $dbData;
+            $this->exists = true;
+        }
         $this->rows = $rows;
     }
 

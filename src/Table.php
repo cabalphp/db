@@ -553,7 +553,7 @@ class Table
         foreach ($this->where as $i => $where) {
             if (is_array($where)) {
                 list($symbol, $cond, $subParams) = $where;
-                $symbol = $i === 0 ? '' : "{$symbol} ";
+                $symbol = $i === 0 ? '' : " {$symbol} ";
                 $statements['WHERE'] .= "{$symbol}{$cond}";
                 $params = array_merge($params, $subParams);
             } else {
@@ -619,7 +619,7 @@ class Table
         foreach ($this->where as $i => $where) {
             if (is_array($where)) {
                 list($symbol, $cond, $subParams) = $where;
-                $symbol = $i === 0 ? '' : "{$symbol} ";
+                $symbol = $i === 0 ? '' : " {$symbol} ";
                 $statements['WHERE'] .= "{$symbol}{$cond}";
                 $params = array_merge($params, $subParams);
             } else {
