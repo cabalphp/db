@@ -6,7 +6,7 @@ class Coroutine
     static public function callUserFuncArray($callable, $params = [])
     {
         if (version_compare(phpversion('swoole'), '4.0.0', '<')) {
-            return Coroutine::call_user_func_array($callable, $params);
+            return \Swoole\Coroutine::call_user_func_array($callable, $params);
         } else {
             return call_user_func_array($callable, $params);
         }
