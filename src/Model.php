@@ -186,6 +186,11 @@ class Model extends Row
     public function toArray()
     {
         $array = parent::toArray();
+        if ($this->visible) {
+            $array = array_only($array, $this->visible);
+        } elseif ($this->hidden) {
+            $array = array_except($array, $this->visible);
+        }
         foreach ($this->appends as $field) {
             $array[$field] = $this->__get($field);
             if ($array[$field] instanceof \DateTime) {

@@ -19,7 +19,7 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
     protected $items = array();
 
     protected $lastPage;
-    protected $prePage;
+    protected $perPage;
     protected $currentPage;
     protected $total;
 
@@ -29,13 +29,13 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
     static $defaultOptions = array();
 
 
-    public function __construct($items, $prePage, $currentPage, $total, $options = array())
+    public function __construct($items, $perPage, $currentPage, $total, $options = array())
     {
         $this->items = $items;
-        $this->prePage = $prePage;
+        $this->perPage = $perPage;
         $this->currentPage = intval($currentPage > 0 ? $currentPage : 1);
         $this->total = $total;
-        $this->lastPage = ceil($total / $prePage);
+        $this->lastPage = ceil($total / $perPage);
         $this->options = array_merge(self::$defaultOptions, $options);
     }
 
@@ -107,11 +107,11 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
     {
         return array(
             'lastPage' => $this->lastPage,
-            'prePage' => $this->prePage,
+            'perPage' => $this->perPage,
             'currentPage' => $this->currentPage,
             'total' => $this->total,
-            'offset' => ($this->currentPage - 1) * $this->prePage,
-            'limit' => $this->prePage,
+            'offset' => ($this->currentPage - 1) * $this->perPage,
+            'limit' => $this->perPage,
             'data' => $this->items->toArray(),
         );
     }
