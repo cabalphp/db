@@ -58,7 +58,7 @@ class Origin implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 
     public function offsetSet($key, $value)
     {
-        if (!isset($this->origin[$key])) {
+        if (!isset($this->origin[$key]) && (!isset($this->array[$key]) || $this->array[$key] !== $value)) {
             $this->origin[$key] = $this->array[$key] ?? null;
         }
         $this->array[$key] = $value;
