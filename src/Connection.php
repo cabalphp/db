@@ -86,7 +86,12 @@ class Connection
 
     public function prepare($sql)
     {
-        $query = $this->getRealConnection()->prepare($sql);
+        try {
+            $query = $this->getRealConnection()->prepare($sql);
+        } catch (\Exception $ex) {
+            $this->discardConnection = true;
+            throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
+        }
         if ($query === false) {
             $this->discardConnection = true;
             throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
