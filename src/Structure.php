@@ -12,7 +12,12 @@ class Structure implements StructureInterface
 
     public function tableName($tableName)
     {
-        return $this->prefix . $tableName;
+        $tableName = $this->prefix . $tableName;
+        $tableName = explode('.', $tableName);
+        $tableName = array_map(function ($str) {
+            return trim($str, '`');
+        }, $tableName);
+        return '`' . implode('`.`', $tableName) . '`';
     }
 
     public function foreignKey($tableName, $foreignTable)

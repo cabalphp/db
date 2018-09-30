@@ -45,6 +45,8 @@ class Model extends Row
         if ($dbData) {
             $this->dbData = $dbData;
             $this->exists = true;
+        } else {
+            $this->dbData = new Origin();
         }
         $this->rows = $rows;
     }
@@ -173,7 +175,7 @@ class Model extends Row
         } else {
             $foreignKey = $foreignKeyOrCallback;
         }
-
+        $obj = new $model;
         return parent::belongs($obj->tableName, $foreignKey, function (Table $table) use ($model, $callback) {
             $table->asModel($model);
             if ($callback) {
@@ -210,7 +212,7 @@ class Model extends Row
         if (method_exists($this, $migicMethod)) {
             return $this->$migicMethod($value);
         }
-        if (in_array($name, $this->getDates())) {
+        if ($value && in_array($name, $this->getDates())) {
             $value = $this->asDateTime($value);
         }
         return $value;
