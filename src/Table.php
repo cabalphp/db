@@ -350,7 +350,6 @@ class Table
                 $field = $field->toString();
             }
             $statements['ORDER BY'][] = "{$field} {$sort}";
-            $params = array_merge($params, $subParams);
         }
         $sql = [];
         foreach ($statements as $key => $values) {

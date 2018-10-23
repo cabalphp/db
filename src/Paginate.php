@@ -66,7 +66,7 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
 
     public function getIterator()
     {
-        return new ArrayIterator($this->items);
+        return $this->items;
     }
 
     public function getCachingIterator($flags = CachingIterator::CALL_TOSTRING)

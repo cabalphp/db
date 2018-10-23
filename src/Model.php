@@ -191,7 +191,7 @@ class Model extends Row
         if ($this->visible) {
             $array = array_only($array, $this->visible);
         } elseif ($this->hidden) {
-            $array = array_except($array, $this->visible);
+            $array = array_except($array, $this->hidden);
         }
         foreach ($this->appends as $field) {
             $array[$field] = $this->__get($field);
