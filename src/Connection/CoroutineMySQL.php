@@ -33,7 +33,7 @@ class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterf
     {
         $this->isWriteable = $writeable;
     }
-    public function getWriteable($writeable)
+    public function getWriteable()
     {
         return $this->isWriteable;
     }

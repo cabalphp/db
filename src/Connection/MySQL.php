@@ -110,7 +110,7 @@ class MySQL implements ConnectionInterface
     {
         $this->isWriteable = $writeable;
     }
-    public function getWriteable($writeable)
+    public function getWriteable()
     {
         return $this->isWriteable;
     }

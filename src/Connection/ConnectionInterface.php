@@ -14,7 +14,7 @@ interface ConnectionInterface
     public function getId();
     public function getName();
     public function setWriteable($writeable = true);
-    public function getWriteable($writeable);
+    public function getWriteable();
 
     public function incrQueryTimes();
     public function getQueryTimes();
