@@ -12,6 +12,7 @@ class MySQL implements ConnectionInterface
     public $connect_errno;
     public $connected = false;
     protected $queryTimes = 0;
+    protected $isWriteable = false;
 
 
     /**
@@ -42,8 +43,6 @@ class MySQL implements ConnectionInterface
             $this->connect_error = $this->errno = $e->getCode();
             $this->connect_errno = $this->error = $e->getMessage();
         }
-
-
     }
 
     public function quote($string)
@@ -102,10 +101,20 @@ class MySQL implements ConnectionInterface
     {
         return $this->id;
     }
+
     public function getName()
     {
         return $this->name;
     }
+    public function setWriteable($writeable = true)
+    {
+        $this->isWriteable = $writeable;
+    }
+    public function getWriteable($writeable)
+    {
+        return $this->isWriteable;
+    }
+
 
     public function incrQueryTimes()
     {

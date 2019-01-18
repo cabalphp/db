@@ -52,11 +52,8 @@ class Manager
                     'database' => $config['database'],
                 ]);
 
-                if ($connection->connected) {
-                    $connection->setId($config['id']);
-                    $connection->setName($name);
-                } else {
-                    throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
+                if (!$connection->connected) {
+                    throw new Exception("数据库连接失败:{$config['user']}@{$config['host']}:{$config['port']}/{$config['database']} " . $connection->error, $connection->errno);
                 }
             } else {
 
@@ -69,13 +66,14 @@ class Manager
                     'database' => $config['database'],
                 ]);
 
-                if ($connection->connected) {
-                    $connection->setId($config['id']);
-                    $connection->setName($name);
-                } else {
-                    throw new Exception("数据库连接失败:" . $connection->error, $connection->errno);
+                if (!$connection->connected) {
+                    throw new Exception("数据库连接失败:{$config['user']}@{$config['host']}:{$config['port']}/{$config['database']} " . $connection->error, $connection->errno);
                 }
             }
+
+            $connection->setId($config['id']);
+            $connection->setName($name);
+            $connection->setWriteable($writeable);
 
         }
 

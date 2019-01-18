@@ -6,6 +6,7 @@ class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterf
     protected $id;
     protected $name;
     protected $queryTimes = 0;
+    protected $isWriteable = false;
 
     public function setId($id)
     {
@@ -26,6 +27,15 @@ class CoroutineMySQL extends \Swoole\Coroutine\MySQL implements ConnectionInterf
     public function getName()
     {
         return $this->name;
+    }
+
+    public function setWriteable($writeable = true)
+    {
+        $this->isWriteable = $writeable;
+    }
+    public function getWriteable($writeable)
+    {
+        return $this->isWriteable;
     }
 
     public function lastInsertId()

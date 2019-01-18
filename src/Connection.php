@@ -86,15 +86,34 @@ class Connection
 
     public function prepare($sql)
     {
-        try {
-            $query = $this->getRealConnection()->prepare($sql);
-        } catch (\Exception $ex) {
-            $this->discardConnection = true;
-            throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
-        }
+        $retryTimes = 0;
+        do {
+            try {
+                $query = $this->getRealConnection()->prepare($sql);
+            } catch (\Exception $ex) {
+                if (!$retryTimes && in_array($this->realConnection->errno, [2006, 2013])) {
+                    $retryTimes++;
+                    $config = $this->manager->getDbConfig(
+                        $this->getRealConnection()->getName(),
+                        $this->getRealConnection()->getWriteable()
+                    );
+                    $this->getRealConnection()->connect([
+                        'host' => $config['host'],
+                        'port' => $config['port'],
+                        'user' => $config['user'],
+                        'password' => $config['password'],
+                        'database' => $config['database'],
+                    ]);
+                } else {
+                    $this->discardConnection = true;
+                    throw new Exception("[{$this->realConnection->errno}]" . $this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
+                }
+            }
+        } while (!$query);
+
         if ($query === false) {
             $this->discardConnection = true;
-            throw new Exception($this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
+            throw new Exception("[{$this->realConnection->errno}]" . $this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
         }
         return $query;
     }
