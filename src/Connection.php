@@ -87,6 +87,7 @@ class Connection
     public function prepare($sql)
     {
         $retryTimes = 0;
+        $query = null;
         do {
             try {
                 $query = $this->getRealConnection()->prepare($sql);
