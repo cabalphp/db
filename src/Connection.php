@@ -125,6 +125,13 @@ class Connection
 
         $startAt = microtime(true);
         $query = $this->prepare($sql);
+
+        foreach ($params as $i => $param) {
+            if ($param instanceof \DateTime) {
+                $params[$i] = $param->format('Y-m-d H:i:s');
+            }
+        }
+
         $result = $query->execute($params);
 
         $this->queryLogs[] = [
@@ -135,7 +142,7 @@ class Connection
             'error' => $this->realConnection->error,
         ];
 
-        if ($result === false && $this->realConnection->errno) {
+        if ($result === false) {
             $this->discardConnection = true;
             throw new Exception($this->realConnection->error . "[SQL] {$sql}; [PATAMS] " . json_encode($params), intval($this->realConnection->errno));
         }
