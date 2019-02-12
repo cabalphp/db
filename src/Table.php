@@ -149,7 +149,7 @@ class Table
             $this->where[] = ')';
         }
         $this->where[] = [
-            $symbol, $cond, (array)$params
+            $symbol, $cond, is_array($params) ? $params : [$params]
         ];
         return $this;
     }

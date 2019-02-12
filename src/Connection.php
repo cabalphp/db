@@ -125,13 +125,6 @@ class Connection
 
         $startAt = microtime(true);
         $query = $this->prepare($sql);
-
-        foreach ($params as $i => $param) {
-            if ($param instanceof \DateTime) {
-                $params[$i] = $param->format('Y-m-d H:i:s');
-            }
-        }
-
         $result = $query->execute($params);
 
         $this->queryLogs[] = [
