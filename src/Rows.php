@@ -201,6 +201,11 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
         return $this->relations[$storeKey];
     }
 
+    public function setRelations($storeKey, Rows $rows)
+    {
+        $this->relations[$storeKey] = $rows;
+    }
+
     /**
      * Undocumented function
      *
