@@ -79,7 +79,8 @@ class Connection
         return new Table(
             $this->manager,
             $this,
-            $tableName
+            $tableName,
+            $this->getStructure()
         );
     }
 
@@ -91,6 +92,9 @@ class Connection
         do {
             try {
                 $query = $this->getRealConnection()->prepare($sql);
+                if ($query === false) {
+                    throw new Exception("[{$this->realConnection->errno}]" . $this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
+                }
             } catch (\Exception $ex) {
                 if (!$retryTimes && in_array($this->realConnection->errno, [2006, 2013])) {
                     $retryTimes++;
@@ -107,15 +111,11 @@ class Connection
                     ]);
                 } else {
                     $this->discardConnection = true;
-                    throw new Exception("[{$this->realConnection->errno}]" . $this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
+                    throw $ex;
                 }
             }
-        } while (!$query);
+        } while (!$query && $retryTimes <= 1);
 
-        if ($query === false) {
-            $this->discardConnection = true;
-            throw new Exception("[{$this->realConnection->errno}]" . $this->realConnection->error . "[SQL] {$sql};", intval($this->realConnection->errno));
-        }
         return $query;
     }
 
