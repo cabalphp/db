@@ -204,7 +204,7 @@ class Model extends Row
 
     public function __isset($key)
     {
-        $migicMethod = explode('_', $name);
+        $migicMethod = explode('_', $key);
         $migicMethod = array_map('ucfirst', $migicMethod);
         $migicMethod = "__get" . implode('', $migicMethod);
         return isset($this->dbData[$key]) || method_exists($this, $migicMethod);
