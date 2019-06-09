@@ -79,7 +79,7 @@ class Model extends Row
         return new Table(
             static::$dbManager,
             $this->connectionName,
-            $table ? : $this->tableName,
+            $table ?: $this->tableName,
             static::$dbManager->getStructure($this->connectionName)
         );
     }
@@ -202,6 +202,15 @@ class Model extends Row
         return $array;
     }
 
+    public function __isset($key)
+    {
+        $migicMethod = explode('_', $name);
+        $migicMethod = array_map('ucfirst', $migicMethod);
+        $migicMethod = "__get" . implode('', $migicMethod);
+        return isset($this->dbData[$key]) || method_exists($this, $migicMethod);
+    }
+
+
     public function __get($name)
     {
         $value = $this->dbData[$name] ?? null;
@@ -238,7 +247,7 @@ class Model extends Row
         if (count($this->fillable) > 0) {
             return array_intersect_key($attributes, array_flip($this->fillable));
         }
-		//默认都不允许自担填充
+        //默认都不允许自担填充
         // return array();
         return in_array('*', $this->guarded) ? [] : $attributes;
     }
@@ -293,8 +302,7 @@ class Model extends Row
     {
         $format = $this->getDateFormat();
 
-        if ($value instanceof \DateTime) {
-        } elseif (is_numeric($value)) {
+        if ($value instanceof \DateTime) { } elseif (is_numeric($value)) {
             $value = Carbon::createFromTimestamp($value);
         } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value)) {
             $value = Carbon::createFromFormat('Y-m-d', $value)->startOfDay();
@@ -321,6 +329,4 @@ class Model extends Row
     {
         return $this->dateFormat;
     }
-
-
 }
