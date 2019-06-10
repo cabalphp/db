@@ -73,7 +73,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     public function toDictionary($key = null)
     {
         $rows = [];
-        $key = $key ? : $this->getTable()->getPrimaryKey();
+        $key = $key ?: $this->getTable()->getPrimaryKey();
         foreach ($this->rows as $row) {
             $rows[$row->$key] = $row;
         }
@@ -89,7 +89,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      */
     public function find($id)
     {
-        return isset($this->rows[$id]) ? $this->instanceRow($this->rows[$id], $this->realRows ? : $this) : null;
+        return isset($this->rows[$id]) ? $this->instanceRow($this->rows[$id], $this->realRows ?: $this) : null;
     }
 
     public function count()
@@ -98,7 +98,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     }
     public function current()
     {
-        return $this->instanceRow($this->rows[current($this->keys)], $this->realRows ? : $this);
+        return $this->instanceRow($this->rows[current($this->keys)], $this->realRows ?: $this);
     }
     public function key()
     {
@@ -127,7 +127,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      */
     public function loadHasRelations($name, $foreignKey, $callback = null, $storeKey = null)
     {
-        $storeKey = $storeKey ? : $name;
+        $storeKey = $storeKey ?: $name;
         if (!isset($this->relations[$storeKey])) {
             $keys = array_unique($this->pluck($this->table->getPrimaryKey()));
 
@@ -159,7 +159,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
      */
     public function loadBelongRelations($name, $foreignKey, $callback = null, $storeKey = null)
     {
-        $storeKey = $storeKey ? : $name;
+        $storeKey = $storeKey ?: $name;
         if (!isset($this->relations[$storeKey])) {
             $keys = array_unique($this->pluck($foreignKey));
             if (count($keys) > 0) {
@@ -249,20 +249,20 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     public function first()
     {
         $keys = array_keys($this->rows);
-        return current($keys) === false ? null : $this->instanceRow($this->rows[current($keys)], $this->realRows ? : $this);
+        return current($keys) === false ? null : $this->instanceRow($this->rows[current($keys)], $this->realRows ?: $this);
     }
 
     protected function instanceRow($origin)
     {
-        $model = $this->model ? : Row::class;
-        return new $model($origin, $this->realRows ? : $this);
+        $model = $this->model ?: Row::class;
+        return new $model($origin, $this->realRows ?: $this);
     }
 
     public function pluck($field)
     {
         $array = [];
         foreach ($this->rows as $row) {
-            $array[] = $row->$field;
+            $array[] = $this->instanceRow($row);
         }
         return $array;
     }
@@ -274,7 +274,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 
     public function offsetGet($key)
     {
-        return isset($this->rows[$key]) ? $this->instanceRow($this->rows[$key], $this->realRows ? : $this) : null;
+        return isset($this->rows[$key]) ? $this->instanceRow($this->rows[$key], $this->realRows ?: $this) : null;
     }
 
     public function offsetSet($key, $value)
@@ -307,11 +307,9 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     {
         $array = [];
         foreach ($this->rows as $k => $row) {
-            $row = $this->instanceRow($row, $this->realRows ? : $this);
+            $row = $this->instanceRow($row, $this->realRows ?: $this);
             $array[$k] = $row->jsonSerialize();
         }
         return $array;
     }
-
-
 }
