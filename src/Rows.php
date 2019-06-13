@@ -26,7 +26,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     {
         foreach ($dbRows as $dbRow) {
             if ($dbRow instanceof Row) {
-                $this[] = new Origin($dbRow->toArray());
+                $this[] = $dbRow->getOriginData();
             } elseif ($dbRow instanceof Origin) {
                 $this[] = $dbRow;
             } elseif (is_array($dbRow)) {
@@ -262,7 +262,10 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
     {
         $array = [];
         foreach ($this->rows as $row) {
-            $array[] = $this->instanceRow($row);
+            $array[] = $this->instanceRow($row)->$field;
+        }
+        if (count($array) > 0 && $array[0] instanceof Row) {
+            $array =  new Rows($array, $array[0]->getRows()->getTable(), $array[0]->getRows(), $array[0]->model);
         }
         return $array;
     }
