@@ -399,6 +399,7 @@ class Table
         } else {
             $this->lockMode = 0;
         }
+        return $this;
     }
 
     public function sharedLock($lock = true)
@@ -411,6 +412,7 @@ class Table
         } else {
             $this->lockMode = 0;
         }
+        return $this;
     }
 
     /**
