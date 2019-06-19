@@ -124,6 +124,22 @@ class Table
         return $this;
     }
 
+    public function setConnection($connection)
+    {
+        $this->connection = $connection;
+        $this->connectionName = $connection->getRealConnection()->getName();
+        return $this;
+    }
+
+    public function on($connection)
+    {
+        if ($connection instanceof Connection) {
+            $this->setConnection($connection);
+        } else {
+            $this->setConnectionName($connection);
+        }
+        return $this;
+    }
     /**
      * Undocumented function
      *
