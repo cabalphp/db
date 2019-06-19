@@ -95,8 +95,8 @@ class Model extends Row
             $this->connectionName = $connection;
         }
 
-        $this->getRows()->getTable()->setConnectionName($this->connectionName);
-        $this->getRows()->getTable()->setStructure(static::$dbManager->getStructure($this->connectionName));
+        // $this->getRows()->getTable()->setConnectionName($this->connectionName);
+        // $this->getRows()->getTable()->setStructure(static::$dbManager->getStructure($this->connectionName));
         return $this;
     }
 
