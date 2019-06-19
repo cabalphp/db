@@ -3,6 +3,8 @@ namespace Cabal\DB;
 
 class Table
 {
+    const LOCK_FOR_UPDATE = 1;
+    const SHARED_LOCK = 2;
     /**
      * Undocumented variable
      *
@@ -30,6 +32,7 @@ class Table
     protected $orderBy = [];
     protected $limit = null;
     protected $offset = null;
+    protected $lockMode = null;
 
     protected $model = null;
 
@@ -121,6 +124,22 @@ class Table
         return $this;
     }
 
+    public function setConnection($connection)
+    {
+        $this->connection = $connection;
+        $this->connectionName = $connection->getRealConnection()->getName();
+        return $this;
+    }
+
+    public function on($connection)
+    {
+        if ($connection instanceof Connection) {
+            $this->setConnection($connection);
+        } else {
+            $this->setConnectionName($connection);
+        }
+        return $this;
+    }
     /**
      * Undocumented function
      *
@@ -325,7 +344,7 @@ class Table
         } else {
             $statements['SELECT'][] = "{$tableName}.*";
         }
-        $this->from = $this->from ? : ["{$tableName}"];
+        $this->from = $this->from ?: ["{$tableName}"];
         foreach ($this->from as $from) {
             $statements['FROM'][] = $from;
         }
@@ -370,6 +389,30 @@ class Table
         return [implode(' ', $sql), $params];
     }
 
+    public function lockForUpdate($lock = true)
+    {
+        if (!$this->connection) {
+            throw new \Exception("must provide connection and in transaction when using lock");
+        }
+        if ($lock) {
+            $this->lockMode = self::LOCK_FOR_UPDATE;
+        } else {
+            $this->lockMode = 0;
+        }
+    }
+
+    public function sharedLock($lock = true)
+    {
+        if (!$this->connection) {
+            throw new \Exception("must provide connection and in transaction when using lock");
+        }
+        if ($lock) {
+            $this->lockMode = self::SHARED_LOCK;
+        } else {
+            $this->lockMode = 0;
+        }
+    }
+
     /**
      * Undocumented function
      *
@@ -378,10 +421,17 @@ class Table
     protected function extract()
     {
         list($sql, $params) = $this->sql();
+
+        if ($this->lockMode === self::LOCK_FOR_UPDATE) {
+            $sql .= ' FOR UPDATE';
+        } elseif ($this->lockMode === self::LOCK_FOR_UPDATE) {
+            $sql .= ' LOCK IN SHARE MODE';
+        }
+
         $connection = $this->getConnection();
         $dbRows = $connection->query($sql, $params);
         $this->storeLogs($connection->getQueryLogs());
-        return new Rows($dbRows ? : [], $this, null, $this->model);
+        return new Rows($dbRows ?: [], $this, null, $this->model);
     }
 
     /**

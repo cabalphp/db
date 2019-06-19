@@ -15,6 +15,8 @@ class Model extends Row
 
     protected $connectionName;
 
+    protected $connection;
+
     /**
      * Define table name
      *
@@ -78,17 +80,23 @@ class Model extends Row
     {
         return new Table(
             static::$dbManager,
-            $this->connectionName,
+            $this->connection ?: $this->connectionName,
             $table ?: $this->tableName,
             static::$dbManager->getStructure($this->connectionName)
         );
     }
 
-    public function on($connectionName)
+    public function on($connection)
     {
-        $this->connectionName = $connectionName;
-        $this->getRows()->getTable()->setConnectionName($connectionName);
-        $this->getRows()->getTable()->setStructure(static::$dbManager->getStructure($connectionName));
+        if ($connection instanceof Connection) {
+            $this->connection = $connection;
+            $this->connectionName = $connection->getRealConnection()->getName();
+        } else {
+            $this->connectionName = $connection;
+        }
+
+        // $this->getRows()->getTable()->setConnectionName($this->connectionName);
+        // $this->getRows()->getTable()->setStructure(static::$dbManager->getStructure($this->connectionName));
         return $this;
     }
 
