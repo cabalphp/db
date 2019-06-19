@@ -405,6 +405,13 @@ class Table
     protected function extract()
     {
         list($sql, $params) = $this->sql();
+
+        if ($this->lockMode === self::LOCK_FOR_UPDATE) {
+            $sql .= ' FOR UPDATE';
+        } elseif ($this->lockMode === self::LOCK_FOR_UPDATE) {
+            $sql .= ' LOCK IN SHARE MODE';
+        }
+
         $connection = $this->getConnection();
         $dbRows = $connection->query($sql, $params);
         $this->storeLogs($connection->getQueryLogs());
