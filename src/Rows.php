@@ -265,7 +265,7 @@ class Rows implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
             $array[] = $this->instanceRow($row)->$field;
         }
         if (count($array) > 0 && $array[0] instanceof Row) {
-            $array =  new Rows($array, $array[0]->getRows()->getTable(), $array[0]->getRows(), $array[0]->model);
+            $array =  new Rows($array, $array[0]->getRows()->getTable(), $array[0]->getRows(), $array[0]->getRows()->model);
         }
         return $array;
     }
