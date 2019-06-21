@@ -486,6 +486,7 @@ class Table
     {
         $rowsQuery = clone $this;
         $count = $rowsQuery->count($columns);
+
         $currentPage = $currentPage < 1 ? 1 : $currentPage;
         if ($perPage < 1) {
             $perPage = $count;
