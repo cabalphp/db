@@ -35,7 +35,7 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
         $this->perPage = $perPage;
         $this->currentPage = intval($currentPage > 0 ? $currentPage : 1);
         $this->total = $total;
-        $this->lastPage = ceil($total / $perPage);
+        $this->lastPage = $perPage < 1 || $total < 1 ? 1 : ceil($total / $perPage);
         $this->options = array_merge(self::$defaultOptions, $options);
     }
 
@@ -66,7 +66,7 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
 
     public function getIterator()
     {
-        return $this->items;
+        return is_array($this->items) ? new ArrayIterator($this->items) : $this->items;
     }
 
     public function getCachingIterator($flags = CachingIterator::CALL_TOSTRING)
@@ -112,7 +112,7 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
             'total' => $this->total,
             'offset' => ($this->currentPage - 1) * $this->perPage,
             'limit' => $this->perPage,
-            'data' => $this->items->toArray(),
+            'data' => is_object($this->items) ? $this->items->toArray() : $this->items,
         );
     }
 
@@ -139,5 +139,4 @@ class Paginate implements ArrayAccess, Countable, IteratorAggregate, JsonSeriali
     {
         return $this->toJson();
     }
-
 }
