@@ -482,10 +482,10 @@ class Table
      * @param array $columns
      * @return \Cabal\DB\Paginate
      */
-    public function paginate($currentPage, $perPage = 20, $columns = ['*'])
+    public function paginate($currentPage, $perPage = 20, $columns = '*')
     {
         $rowsQuery = clone $this;
-        $count = $rowsQuery->count();
+        $count = $rowsQuery->count($columns);
         $currentPage = $currentPage < 1 ? 1 : $currentPage;
         if ($perPage < 1) {
             $perPage = $count;
@@ -514,7 +514,7 @@ class Table
     public function count($field = '*')
     {
         $field = $this->distinct ? "DISTINCT {$field}" : $field;
-        return intval($this->select(new Raw("COUNT({$field}) as `aggregation`"))->first(1)->aggregation);
+        return intval($this->distinct(false)->select(new Raw("COUNT({$field}) as `aggregation`"))->first(1)->aggregation);
     }
 
     /**
